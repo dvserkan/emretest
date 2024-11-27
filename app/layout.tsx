@@ -1,32 +1,26 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/components/language-provider";
+import "./globals.css";
+import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'Next.js Clean App',
-  description: 'A clean Next.js application',
-};
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en">
+			<body className={inter.className}>
+				<ThemeProvider
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+				>
+					<LanguageProvider>{children}</LanguageProvider>
+				</ThemeProvider>
+			</body>
+		</html>
+	);
 }
