@@ -138,7 +138,7 @@ export class Superset {
             const defaultOptions = {
                 client_id: this.generateClientId(),
                 ctas_method: "TABLE",
-                database_id: 3,
+                database_id: 1,
                 expand_data: true,
                 json: true,
                 runAsync: false,
