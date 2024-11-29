@@ -22,15 +22,14 @@ export default async function handler(
                 ACCESS_TOKEN_SECRET
             );
 
-            // Token payload'ından branches'i al
-            const userBranches = decoded.payload.userBranches;
+            // Token payload'ından userId'i al
+            const userId = decoded.payload.userId;
 
-            if (!userBranches) {
+            if (!userId) {
                 return res.status(400).json({ error: 'No branches found in token' });
             }
-
-            const sql = "SELECT * FROM Efr_Branchs WHERE BranchID IN({{ userBranches }}) AND IsActive=1 AND CountryName = 'TÜRKİYE'";
-            const response = await db.query(sql, { templateParams: JSON.stringify({ userBranches: userBranches }) });
+            const sql = "SELECT DISTINCT b.* FROM Efr_Branchs b WHERE b.IsActive = 1 AND b.CountryName = 'TÜRKİYE' AND EXISTS (SELECT 1 FROM Efr_Users u WHERE u.UserID = '{{ userId }}' AND u.IsActive = 1 AND (u.Category = 5 OR  CHARINDEX(',' + CAST(b.BranchID AS VARCHAR) + ',', ',' + u.UserBranchs + ',') > 0))";
+            const response = await db.query(sql, { templateParams: JSON.stringify({ userId }) });
 
             if (response.data == null) {
                 return res.status(400).json(response.error);

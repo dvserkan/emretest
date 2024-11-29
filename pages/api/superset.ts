@@ -7,6 +7,7 @@ import type {
     SuperSetExecuteResponse,
     SuperSetDatabaseResponse
 } from "@/types/superset";
+import axios, { AxiosRequestConfig } from 'axios';
 
 interface CacheEntry<T> {
     data: T;
@@ -45,14 +46,46 @@ export class Superset {
 
         for (let i = 0; i < this.MAX_RETRIES; i++) {
             try {
-                const response = await fetch(url, options);
+                const axiosConfig: AxiosRequestConfig = {
+                    method: options.method,
+                    headers: {
+                        ...(options.headers as Record<string, string>),
+                        'Accept': 'application/json',
+                        'Accept-Encoding': 'gzip, deflate, br'
+                    } as Record<string, string>,
+                };
+
+                if (options.body) {
+                    const bodyStr = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+                    axiosConfig.data = bodyStr;
+                    if (axiosConfig.headers) {
+                        axiosConfig.headers = {
+                            ...axiosConfig.headers,
+                            'Content-Length': Buffer.from(bodyStr).length.toString()
+                        };
+                    }
+                }
+
+                const axiosResponse = await axios(url, axiosConfig);
+
+                // Axios yanıtını fetch Response formatına dönüştürme
+                const response = new Response(JSON.stringify(axiosResponse.data), {
+                    status: axiosResponse.status,
+                    statusText: axiosResponse.statusText,
+                    headers: new Headers(axiosResponse.headers as any)
+                });
+
                 if (!response.ok && response.status === 401) {
                     await this.renewTokens();
                     continue;
                 }
                 return response;
             } catch (error) {
-                lastError = error as Error;
+                if (axios.isAxiosError(error) && error.response?.status === 401) {
+                    await this.renewTokens();
+                    continue;
+                }
+                lastError = error;
                 await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i))); // Exponential backoff
             }
         }
