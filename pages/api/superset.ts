@@ -28,10 +28,7 @@ export class Superset {
     private readonly DATABASE_CACHE = new Map<string, CacheEntry<SuperSetDatabaseResponse>>();
 
     private constructor() {
-        const isLocal = process.env.NODE_ENV === 'development';
-        this.baseUrl = isLocal 
-            ? (process.env.NEXT_PUBLIC_LOCAL_SUPERSET_URL || 'http://49.12.210.54:8088')
-            : (process.env.NEXT_PUBLIC_REMOTE_SUPERSET_URL || '');
+        this.baseUrl = process.env.SUPERSET_BASE_URL || '';
         this.username = process.env.SUPERSET_USERNAME || '';
         this.password = process.env.SUPERSET_PASSWORD || '';
         this.provider = process.env.SUPERSET_PROVIDER || '';
@@ -49,10 +46,8 @@ export class Superset {
 
         for (let i = 0; i < this.MAX_RETRIES; i++) {
             try {
-                const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`;
                 const axiosConfig: AxiosRequestConfig = {
                     method: options.method,
-                    url: fullUrl,
                     headers: {
                         ...(options.headers as Record<string, string>),
                         'Accept': 'application/json',
@@ -71,7 +66,7 @@ export class Superset {
                     }
                 }
 
-                const axiosResponse = await axios(axiosConfig);
+                const axiosResponse = await axios(url, axiosConfig);
 
                 // Axios yanıtını fetch Response formatına dönüştürme
                 const response = new Response(JSON.stringify(axiosResponse.data), {
@@ -174,9 +169,13 @@ export class Superset {
         try {
             await this.createTokens();
             const defaultOptions = {
+                client_id: this.generateClientId(),
                 ctas_method: "TABLE",
-                database_id: 4,
+                database_id: 3,
+                expand_data: true,
                 json: true,
+                runAsync: false,
+                select_as_cta: false,
                 sql: sql
             };
 
