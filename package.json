@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && xcopy /E /I .next\\static .next\\standalone\\.next\\static && xcopy /E /I public .next\\standalone\\public && copy .env .next\\standalone\\.env",
+    "copy-files": "node scripts/copy-files.js",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
