@@ -40,6 +40,9 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
+    const startTime = performance.now();
+    console.log('Login handler started');
+
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
     }
@@ -49,18 +52,24 @@ export default async function handler(
 
         const { username, password } = req.body;
 
+        const encryptStartTime = performance.now();
         const encryptedpass = encrypt(password);
-        const query = "SELECT UserID, UserName, UserBranchs,Category FROM Efr_Users WHERE UserName = '{{ username }}' AND EncryptedPass = '{{ password }}' AND IsActive=1";
+        console.log(`Password encryption took: ${performance.now() - encryptStartTime}ms`);
+
+        const dbQueryStartTime = performance.now();
+        const query = "SELECT TOP 1 UserID, UserName FROM Efr_Users WHERE UserName = '{{ username }}' AND EncryptedPass = '{{ password }}' AND IsActive=1";
         const response = await db.query<Efr_Users[]>(query, {templateParams: JSON.stringify({ username, password: encryptedpass })});
+        console.log(`Database query took: ${performance.now() - dbQueryStartTime}ms`);
+
         if (response.data != null && response.data.length > 0) {
+            const tokenStartTime = performance.now();
             const user = response.data[0]
             let tokenPayload = {
                 username: user.UserName,
                 userId: user.UserID,
-                userBranches: user.UserBranchs,
                 aud: tenantId
             }
-
+/*
             if(user.Category === 5){
                 const response = await db.query<Efr_Branches[]>("SELECT * FROM Efr_Branchs WHERE IsActive=1 AND CountryName = 'TÜRKİYE'");
                 tokenPayload = {
@@ -68,43 +77,47 @@ export default async function handler(
                     userBranches: response.data?.map((item)=> item.BranchID).join(",")
                 }
             }
-            
+            */
+            const currentTimestamp = Math.floor(Date.now() / 1000);
+
             const accessToken = await new SignJWT(tokenPayload)
                 .setProtectedHeader({ alg: ACCESS_TOKEN_ALGORITHM })
-                .setExpirationTime(Math.floor(Date.now() / 1000) + ACCESS_TOKEN_LIFETIME)
+                .setExpirationTime(currentTimestamp + ACCESS_TOKEN_LIFETIME)
                 .setIssuer(NEXT_PUBLIC_DOMAIN)
                 .setAudience(tenantId)
-                .setIssuedAt(Math.floor(Date.now() / 1000))
+                .setIssuedAt(currentTimestamp)
                 .sign(ACCESS_TOKEN_SECRET);
+            console.log(`Access token generation took: ${performance.now() - tokenStartTime}ms`);
 
+            const cookieStartTime = performance.now();
             const cookieDomain = NODE_ENV === 'production' ? getDomainForCookie() : undefined;
 
             const accessTokenCookie = serialize('access_token', accessToken, {
                 httpOnly: true,
                 secure: NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: ACCESS_TOKEN_LIFETIME,
                 path: '/',
                 ...(cookieDomain ? { domain: cookieDomain } : {})
             });
 
             const refreshToken = await new SignJWT(tokenPayload)
                 .setProtectedHeader({ alg: REFRESH_TOKEN_ALGORITHM })
-                .setExpirationTime(Math.floor(Date.now() / 1000) + REFRESH_TOKEN_LIFETIME)
+                .setExpirationTime(currentTimestamp + REFRESH_TOKEN_LIFETIME)
                 .setIssuer(NEXT_PUBLIC_DOMAIN)
                 .setAudience(tenantId)
-                .setIssuedAt(Math.floor(Date.now() / 1000))
+                .setIssuedAt(currentTimestamp)
                 .sign(REFRESH_TOKEN_SECRET);
+            console.log(`Refresh token generation took: ${performance.now() - cookieStartTime}ms`);
 
             const refreshTokenCookie = serialize('refresh_token', refreshToken, {
                 httpOnly: true,
                 secure: NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: REFRESH_TOKEN_LIFETIME,
                 path: '/',
                 ...(cookieDomain ? { domain: cookieDomain } : {})
             });
 
+            console.log(`Total login process took: ${performance.now() - startTime}ms`);
             return res.status(200).setHeader('Set-Cookie', [accessTokenCookie, refreshTokenCookie]).json({ message: 'Login successful' });
         }
         return res.status(401).json({ message: 'Invalid credentials' });
