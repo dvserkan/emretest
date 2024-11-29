@@ -1,18 +1,22 @@
 import { useEffect, useState, useRef } from 'react';
 
-export function useInView() {
+export function useInView(options = {}) {
     const [isInView, setIsInView] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
+                // Element görünür olduğunda veya görünürlükten çıktığında state'i güncelle
                 setIsInView(entry.isIntersecting);
             },
             {
                 root: null,
-                rootMargin: '0px',
-                threshold: 0.1,
+                // Daha erken yükleme için margin değerini artır
+                rootMargin: '50px',
+                // Daha az element görünür olduğunda tetiklensin
+                threshold: 0.01,
+                ...options
             }
         );
 
@@ -25,7 +29,7 @@ export function useInView() {
                 observer.unobserve(ref.current);
             }
         };
-    }, []);
+    }, [options]);
 
     return [ref, isInView] as const;
 }

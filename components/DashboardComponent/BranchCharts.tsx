@@ -1,127 +1,115 @@
 "use client";
 
-// }
+import { Card } from "@/components/ui/card";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Legend
+} from "recharts";
+import { BranchModel } from "@/types/tables";
 
-// interface CustomTooltipProps {
-//   active?: boolean;
-//   payload?: Array<{ value: number }>;
-//   label?: string;
-// }
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{ value: number; name: string }>;
+    label?: string;
+}
 
-export default function BranchCharts() {
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
+export default function BranchCharts({ data }: { data: BranchModel }) {
+    const chartData = [
+        { name: "Cari Dönem", value: Number(data.reportValue2) || 0 },
+        { name: "Geçen Hafta", value: Number(data.reportValue3) || 0 },
+        { name: "Geçen Hafta (Tüm Gün)", value: Number(data.reportValue4) || 0 }
+    ];
 
-//   const groupSalesData = [
-//     { name: "YİYECEK", value: salesData.food },
-//     { name: "İÇECEK", value: salesData.drinks },
-//     { name: "İND. MENÜ", value: salesData.discountMenu },
-//   ];
+    // Grup satış dağılımı için örnek veri
+    const salesDistribution = [
+        { name: "Yemek", value: 60 },
+        { name: "İçecek", value: 25 },
+        { name: "Tatlı", value: 15 }
+    ];
 
-//   const revenueChartData = [
-//     { name: "Açık Çekler", value: revenueData.openChecks },
-//     { name: "Kapalı Çekler", value: revenueData.closedChecks },
-//     { name: "Toplam Ciro", value: revenueData.total },
-//   ];
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('tr-TR', {
+            style: 'currency',
+            currency: 'TRY',
+            minimumFractionDigits: 2
+        }).format(value);
+    };
 
-//   const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-//     if (active && payload && payload.length) {
-//       return (
-//         <div className="bg-background/95 border border-border p-2 rounded-lg shadow-lg backdrop-blur-sm">
-//           <p className="text-sm font-medium">{label}</p>
-//           <p className="text-sm text-muted-foreground">
-//             {formatCurrency(payload[0].value)}
-//           </p>
-//         </div>
-//       );
-//     }
-//     return null;
-//   };
+    const formatPercentage = (value: number) => {
+        return `%${value}`;
+    };
 
-//   const commonXAxisProps: XAxisProps = {
-//     tick: { fontSize: 12 },
-//     axisLine: { stroke: 'hsl(var(--border))' },
-//     tickLine: { stroke: 'hsl(var(--border))' }
-//   };
+    const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-background/95 border border-border p-2 rounded-lg shadow-lg backdrop-blur-sm">
+                    <p className="text-sm font-medium">{payload[0].name}</p>
+                    <p className="text-sm text-muted-foreground">
+                        {label ? formatCurrency(payload[0].value) : formatPercentage(payload[0].value)}
+                    </p>
+                </div>
+            );
+        }
+        return null;
+    };
 
-//   const commonYAxisProps: YAxisProps = {
-//     tick: { fontSize: 12 },
-//     axisLine: { stroke: 'hsl(var(--border))' },
-//     tickLine: { stroke: 'hsl(var(--border))' }
-//   };
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="p-6 hover:shadow-lg transition-all duration-300">
+                <h3 className="text-lg font-semibold mb-4">{data.reportValue1 || 'Şube'} - TOPLAM CİRO ANALİZİ</h3>
+                <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="name" />
+                            <YAxis tickFormatter={formatCurrency} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar
+                                dataKey="value"
+                                fill="hsl(var(--primary))"
+                                radius={[4, 4, 0, 0]}
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </Card>
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="p-6 hover:shadow-lg transition-all duration-300">
-          <h3 className="text-lg font-semibold mb-4">TOPLAM CİRO ANALİZİ</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  {...commonXAxisProps}
-                  dataKey="name"
-                  interval={0}
-                />
-                <YAxis 
-                  {...commonYAxisProps}
-                  tickFormatter={(value) => `${value.toLocaleString()} ₺`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar 
-                  dataKey="value" 
-                  fill="hsl(var(--chart-1))"
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={50}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="p-6 hover:shadow-lg transition-all duration-300">
-          <h3 className="text-lg font-semibold mb-4">GRUP SATIŞ DAĞILIMI</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={groupSalesData} 
-                layout="vertical"
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  {...commonXAxisProps}
-                  type="number"
-                  tickFormatter={(value) => `${value.toLocaleString()} ₺`}
-                />
-                <YAxis 
-                  {...commonYAxisProps}
-                  type="category" 
-                  dataKey="name"
-                  width={80}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar 
-                  dataKey="value" 
-                  fill="hsl(var(--chart-2))"
-                  radius={[0, 4, 4, 0]}
-                  maxBarSize={30}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </motion.div> */}
-    </div>
-  );
+            <Card className="p-6 hover:shadow-lg transition-all duration-300">
+                <h3 className="text-lg font-semibold mb-4">{data.reportValue1 || 'Şube'} - GRUP SATIŞ DAĞILIMI</h3>
+                <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={salesDistribution}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={100}
+                                fill="#8884d8"
+                                dataKey="value"
+                            >
+                                {salesDistribution.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+            </Card>
+        </div>
+    );
 }

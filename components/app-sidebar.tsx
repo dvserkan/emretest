@@ -189,7 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "Raporlar",
             icon: ClipboardList,
             isActive: true,
-            expanded: true,
+            expanded: false,
             items: groups.map(group => ({
                 title: group.GroupName,
                 icon: group.GroupIcon,
