@@ -70,7 +70,6 @@ export type Efr_Branches = {
     LogoExternalCode: string;
 }
 
-
 export type WebWidget = {
     AutoID: number;
     ReportName?: string;
@@ -84,11 +83,8 @@ export type WebWidget = {
     V5Type?: number;
     V6Type?: number;
     IsActive?: boolean;
-    //Query?: string;
-    //ReportQuery2?: string;
     ReportColor?: string;
 }
-
 
 export type WebWidgetData = {
     ReportID: number;
@@ -171,4 +167,21 @@ export type OrderDetail = {
     header: OrderHeader;
     payments: OrderPayment[];
     transactions: OrderTransaction[];
+}
+
+export type BranchModel = {
+    BranchID: number;
+    reportValue1: string;    // SubeAdi
+    reportValue2: number;    // TC (Cari dönem ciro)
+    reportValue3: number;    // GHTC (Geçen hafta aynı saat ciro)
+    reportValue4: number;    // GHTCTUM (Geçen hafta tüm gün ciro)
+    reportValue5: number;    // KisiSayisi
+    reportValue6: number;    // GHKisiSayisi
+    reportValue7: number;    // GHKisiSayisiTUM
+    reportValue8: number;    // Oran
+    reportValue9: number;    // GecenHaftaOran
+}
+
+export type Branch = {
+    BranchID: string | number;
 }

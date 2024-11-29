@@ -1,11 +1,11 @@
 import { CACHE_CONSTANTS } from "./constants";
-import type { 
-    SuperSetLoginResponse, 
-    SuperSetCrsfResponse, 
-    SuperSetQueryOptions, 
-    SuperSetErrorResponse, 
-    SuperSetExecuteResponse, 
-    SuperSetDatabaseResponse 
+import type {
+    SuperSetLoginResponse,
+    SuperSetCrsfResponse,
+    SuperSetQueryOptions,
+    SuperSetErrorResponse,
+    SuperSetExecuteResponse,
+    SuperSetDatabaseResponse
 } from "@/types/superset";
 
 interface CacheEntry<T> {
@@ -138,7 +138,7 @@ export class Superset {
             const defaultOptions = {
                 client_id: this.generateClientId(),
                 ctas_method: "TABLE",
-                database_id: 1,
+                database_id: 3,
                 expand_data: true,
                 json: true,
                 runAsync: false,

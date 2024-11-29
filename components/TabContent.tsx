@@ -1,48 +1,23 @@
-// components/TabContent.tsx
-import { memo, useEffect, useState } from 'react';
-import { useTabStore } from '@/stores/tab-store';
+import React from 'react';
 
-interface TabContentProps {
-  id: string;
-  isActive: boolean;
-  lazyComponent?: () => Promise<{ default: React.ComponentType }>;
+interface TabContentWrapperProps {
+    children: React.ReactNode;
 }
 
-export const TabContent = memo(({ id, isActive, lazyComponent }: TabContentProps) => {
-  const { renderedComponents, setRenderedComponent } = useTabStore();
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const loadComponent = async () => {
-      if (!renderedComponents[id] && lazyComponent) {
-        setLoading(true);
-        try {
-          const { default: Component } = await lazyComponent();
-          setRenderedComponent(id, <Component />);
-        } catch (error) {
-          console.error('Failed to load component:', error);
-        }
-        setLoading(false);
-      }
-    };
-
-    if (isActive) {
-      loadComponent();
-    }
-  }, [id, isActive, lazyComponent, renderedComponents, setRenderedComponent]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div
-      className="tab-content h-full"
-      style={{ display: isActive ? 'block' : 'none' }}
-    >
-      {renderedComponents[id]}
-    </div>
-  );
-});
-
-TabContent.displayName = 'TabContent';
+export function TabContentWrapper({ children }: TabContentWrapperProps) {
+    return (
+        <div className="h-[calc(100vh-12rem)] overflow-hidden">
+            <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent 
+                [&::-webkit-scrollbar]:w-2
+                [&::-webkit-scrollbar-thumb]:bg-gray-300/50
+                [&::-webkit-scrollbar-thumb]:rounded-full
+                [&::-webkit-scrollbar-track]:bg-transparent
+                dark:[&::-webkit-scrollbar-thumb]:bg-gray-700/50
+                hover:[&::-webkit-scrollbar-thumb]:bg-gray-300/80
+                dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-700/80"
+            >
+                {children}
+            </div>
+        </div>
+    );
+}

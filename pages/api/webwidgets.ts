@@ -1,6 +1,6 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { db} from './superset';
+import { db } from './superset';
 import { WebWidget } from '@/types/tables';
 
 export default async function handler(
@@ -21,7 +21,7 @@ export default async function handler(
 
         return res.status(200).json(response.data);
     } catch (error) {
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: 'Internal server error',
             message: error instanceof Error ? error.message : 'Unknown error'
         });
