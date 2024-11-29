@@ -116,7 +116,6 @@ export async function middleware(request: NextRequest) {
                 {
                     audience: tenantId,
                     issuer: NEXT_PUBLIC_DOMAIN,
-                    maxTokenAge: REFRESH_TOKEN_LIFETIME,
                     algorithms: [REFRESH_TOKEN_ALGORITHM]
                 }
             );
@@ -135,7 +134,6 @@ export async function middleware(request: NextRequest) {
                         audience: tenantId,
                         issuer: NEXT_PUBLIC_DOMAIN,
                         algorithms: [ACCESS_TOKEN_ALGORITHM],
-                        maxTokenAge: ACCESS_TOKEN_LIFETIME,
                         requiredClaims: ['username', 'userId', 'userBranches']
                     }
                 );
